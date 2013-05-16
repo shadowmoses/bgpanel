@@ -87,12 +87,20 @@ else
 
 	$ansi = new File_ANSI();
 
-	// We retrieve screen name ($session)
-	$session = $ssh->exec( "screen -ls | awk '{ print $1 }' | grep '^[0-9]*\.".$rows['screen']."$'"."\n" );
-	$session = trim($session);
-
-	if ($rows['type'] == '1')
+	if ($rows['type'] == '0') // Nohup case
 	{
+		//We retrieve the content of the screen
+		$cmd = "cd ".$rows['homedir']."; cat screenlog.0";
+		@$ansi->appendString($ssh->exec($cmd."\n"));
+		$screenContents = htmlspecialchars_decode(strip_tags($ansi->getScreen()));
+		unset($cmd);
+	}
+	elseif ($rows['type'] == '1')
+	{
+		// We retrieve screen name ($session)
+		$session = $ssh->exec( "screen -ls | awk '{ print $1 }' | grep '^[0-9]*\.".$rows['screen']."$'"."\n" );
+		$session = trim($session);
+
 		if (!empty($_GET['cmd']) && !empty($session))
 		{
 			$cmdRcon = $_GET['cmd'];
@@ -110,18 +118,18 @@ else
 			header( 'Location: scriptconsole.php?id='.urlencode($scriptid) );
 			die();
 		}
-	}
 
-	// We retrieve screen contents
-	if (!empty($session)) {
-		$ssh->write("screen -R ".$session."\n");
-		$ssh->setTimeout(1);
+		// We retrieve screen contents
+		if (!empty($session)) {
+			$ssh->write("screen -R ".$session."\n");
+			$ssh->setTimeout(1);
 
-		@$ansi->appendString($ssh->read());
-		$screenContents = htmlspecialchars_decode(strip_tags($ansi->getScreen()));
-	}
-	else {
-		$screenContents = "The Script is not running...\n";
+			@$ansi->appendString($ssh->read());
+			$screenContents = htmlspecialchars_decode(strip_tags($ansi->getScreen()));
+		}
+		else {
+			$screenContents = "The Script is not running...\n";
+		}
 	}
 
 	$ssh->disconnect();

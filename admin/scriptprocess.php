@@ -752,8 +752,8 @@ switch (@$task)
 				$startline = preg_replace("#\{script\}#", $script['filename'], $startline); //SCRIPT replacement
 			}
 			#-----------------+
-			$cmd = "screen -AdmS ".preg_replace('#[^a-zA-Z0-9]#', "_", $script['name'])." ".$startline;
-			$ssh->exec('cd '.$script['homedir'].'; '.$cmd."\n");
+			$cmd = "screen -AdmSL ".preg_replace('#[^a-zA-Z0-9]#', "_", $script['name'])." ".$startline;
+			$ssh->exec('cd '.$script['homedir'].'; rm screenlog.0; '.$cmd."\n");
 			#-----------------+
 			$ssh->disconnect();
 
